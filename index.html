@@ -1,0 +1,936 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <!-- YouTube embeds need a non-empty Referer; required for Error 153 fixes (see Google embed identity docs). -->
+  <meta name="referrer" content="strict-origin-when-cross-origin">
+  <title>Vatsal Mandali — Unreal Engine Developer</title>
+  <link
+    href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Sora:wght@300;400;500;600;700&display=swap"
+    rel="stylesheet">
+  <style>
+    *,
+    *::before,
+    *::after {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    :root {
+      --bg: #0a0a0b;
+      --bg-card: #111113;
+      --bg-card-hover: #18181b;
+      --border: #222225;
+      --border-hover: #3a3a3f;
+      --text: #e4e4e7;
+      --text-dim: #71717a;
+      --text-muted: #52525b;
+      --accent: #3b82f6;
+      --accent-dim: #1d4ed8;
+      --accent-glow: rgba(59, 130, 246, 0.15);
+      --green: #22c55e;
+      --font-body: 'Sora', sans-serif;
+      --font-mono: 'JetBrains Mono', monospace;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--font-body);
+      line-height: 1.6;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");
+      pointer-events: none;
+      z-index: 9999;
+    }
+
+    .container {
+      max-width: 1000px;
+      margin: 0 auto;
+      padding: 0 24px;
+    }
+
+    section {
+      padding: 80px 0;
+    }
+
+    /* ===== NAV ===== */
+    nav {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      z-index: 100;
+      background: rgba(10, 10, 11, 0.8);
+      backdrop-filter: blur(20px);
+      border-bottom: 1px solid var(--border);
+    }
+
+    nav .container {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      height: 60px;
+    }
+
+    .nav-logo {
+      font-family: var(--font-mono);
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--text);
+      letter-spacing: -0.5px;
+    }
+
+    .nav-logo span {
+      color: var(--accent);
+    }
+
+    .nav-links {
+      display: flex;
+      gap: 32px;
+      list-style: none;
+    }
+
+    .nav-links a {
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--text-dim);
+      text-decoration: none;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+      transition: color 0.2s;
+    }
+
+    .nav-links a:hover {
+      color: var(--text);
+    }
+
+    /* ===== HERO ===== */
+    .hero {
+      padding-top: 160px;
+      padding-bottom: 80px;
+    }
+
+    .hero-label {
+      font-family: var(--font-mono);
+      font-size: 13px;
+      color: var(--accent);
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      margin-bottom: 20px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .hero-label::before {
+      content: '';
+      width: 24px;
+      height: 1px;
+      background: var(--accent);
+    }
+
+    .hero h1 {
+      font-size: clamp(40px, 7vw, 72px);
+      font-weight: 700;
+      line-height: 1.05;
+      letter-spacing: -2px;
+      margin-bottom: 24px;
+    }
+
+    .hero h1 .highlight {
+      background: linear-gradient(135deg, var(--accent), #818cf8);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .hero-desc {
+      font-size: 17px;
+      color: var(--text-dim);
+      max-width: 560px;
+      line-height: 1.7;
+      margin-bottom: 40px;
+    }
+
+    .status {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 13px;
+      color: var(--green);
+      margin-bottom: 20px;
+      font-weight: 500;
+    }
+
+    .status-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--green);
+      animation: pulse 2s ease-in-out infinite;
+    }
+
+    @keyframes pulse {
+
+      0%,
+      100% {
+        opacity: 1;
+        box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.4);
+      }
+
+      50% {
+        opacity: 0.7;
+        box-shadow: 0 0 0 6px rgba(34, 197, 94, 0);
+      }
+    }
+
+    .hero-actions {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 12px;
+    }
+
+    .hero-actions-row {
+      display: flex;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 12px 24px;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 500;
+      font-family: var(--font-body);
+      text-decoration: none;
+      transition: all 0.2s;
+      cursor: pointer;
+      border: none;
+    }
+
+    .btn-primary {
+      background: var(--accent);
+      color: #fff;
+    }
+
+    .btn-primary:hover {
+      background: var(--accent-dim);
+      box-shadow: 0 0 30px var(--accent-glow);
+    }
+
+    .btn-secondary {
+      background: transparent;
+      color: var(--text);
+      border: 1px solid var(--border);
+    }
+
+    .btn-secondary:hover {
+      border-color: var(--accent);
+      color: var(--text);
+      background: rgba(255, 255, 255, 0.03);
+    }
+
+    .hero-secondary {
+      margin-top: 12px;
+    }
+
+    .hero-secondary a {
+      font-size: 13px;
+      color: var(--text-dim);
+      text-decoration: underline;
+      opacity: 0.8;
+      transition: all 0.2s ease;
+    }
+
+    .hero-secondary a:hover {
+      opacity: 1;
+      color: var(--text);
+    }
+
+    /* ===== SECTION HEADERS ===== */
+    .section-label {
+      font-family: var(--font-mono);
+      font-size: 12px;
+      color: var(--accent);
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      margin-bottom: 12px;
+    }
+
+    .section-title {
+      font-size: 32px;
+      font-weight: 700;
+      letter-spacing: -1px;
+      margin-bottom: 48px;
+    }
+
+    /* ===== PROJECT ===== */
+    .project-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      overflow: hidden;
+      transition: border-color 0.3s;
+    }
+
+    .project-card:hover {
+      border-color: var(--border-hover);
+    }
+
+    .project-video {
+      width: 100%;
+      aspect-ratio: 16/9;
+      background: #000;
+      border-bottom: 1px solid var(--border);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .project-video iframe {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      border: 0;
+    }
+
+    /* Shown only when the page is opened as file:// — YouTube blocks iframe embeds there (Error 150). */
+    .yt-file-fallback {
+      position: absolute;
+      inset: 0;
+      display: block;
+      margin: 0;
+      padding: 0;
+      border: none;
+      background: #000;
+      cursor: pointer;
+      font-family: inherit;
+      color: inherit;
+      text-decoration: none;
+    }
+
+    .yt-file-fallback:focus-visible {
+      outline: 2px solid var(--accent);
+      outline-offset: -2px;
+    }
+
+    .yt-file-fallback-poster {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      pointer-events: none;
+    }
+
+    .yt-file-fallback-shade {
+      position: absolute;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.42);
+      pointer-events: none;
+    }
+
+    .yt-file-fallback-play {
+      position: absolute;
+      left: 50%;
+      top: 46%;
+      transform: translate(-50%, -50%);
+      width: 72px;
+      height: 72px;
+      border-radius: 50%;
+      background: #c00;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.45);
+      pointer-events: none;
+    }
+
+    .yt-file-fallback-play svg {
+      width: 36px;
+      height: 36px;
+      margin-left: 4px;
+      color: #fff;
+    }
+
+    .yt-file-fallback-cap {
+      position: absolute;
+      left: 50%;
+      bottom: 14px;
+      transform: translateX(-50%);
+      max-width: 92%;
+      text-align: center;
+      font-size: 12px;
+      font-weight: 600;
+      line-height: 1.35;
+      color: #fff;
+      text-shadow: 0 1px 4px rgba(0, 0, 0, 0.95);
+      pointer-events: none;
+    }
+
+    .project-body {
+      padding: 32px;
+    }
+
+    .project-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 16px;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+
+    .project-name {
+      font-size: 22px;
+      font-weight: 700;
+      letter-spacing: -0.5px;
+    }
+
+    .project-tags {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .tag {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      font-weight: 500;
+      padding: 4px 10px;
+      border-radius: 4px;
+      background: var(--accent-glow);
+      color: var(--accent);
+      border: 1px solid rgba(59, 130, 246, 0.2);
+    }
+
+    .project-desc {
+      color: var(--text-dim);
+      font-size: 15px;
+      margin-bottom: 28px;
+      line-height: 1.7;
+    }
+
+    .systems-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+    }
+
+    .system-item {
+      padding: 16px;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      transition: border-color 0.2s;
+    }
+
+    .system-item:hover {
+      border-color: var(--border-hover);
+    }
+
+    .system-name {
+      font-size: 13px;
+      font-weight: 600;
+      margin-bottom: 6px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .system-name::before {
+      content: '';
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--accent);
+      flex-shrink: 0;
+    }
+
+    .system-desc {
+      font-size: 13px;
+      color: var(--text-dim);
+      line-height: 1.6;
+    }
+
+    /* ===== EXPERIENCE ===== */
+    .exp-card {
+      padding: 32px;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+    }
+
+    .exp-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 4px;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .exp-title {
+      font-size: 18px;
+      font-weight: 700;
+    }
+
+    .exp-date {
+      font-family: var(--font-mono);
+      font-size: 13px;
+      color: var(--text-muted);
+    }
+
+    .exp-company {
+      font-size: 15px;
+      color: var(--text-dim);
+      margin-bottom: 20px;
+    }
+
+    .exp-list {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .exp-list li {
+      font-size: 14px;
+      color: var(--text-dim);
+      line-height: 1.6;
+      padding-left: 18px;
+      position: relative;
+    }
+
+    .exp-list li::before {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 9px;
+      width: 5px;
+      height: 5px;
+      border-radius: 50%;
+      background: var(--text-muted);
+    }
+
+    /* ===== SKILLS ===== */
+    .skills-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 16px;
+    }
+
+    .skill-group {
+      padding: 24px;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      transition: border-color 0.2s;
+    }
+
+    .skill-group:hover {
+      border-color: var(--border-hover);
+    }
+
+    .skill-group-title {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--accent);
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      margin-bottom: 16px;
+    }
+
+    .skill-items {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .skill-items span {
+      font-size: 14px;
+      color: var(--text-dim);
+    }
+
+    /* ===== CONTACT ===== */
+    .contact-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 16px;
+    }
+
+    .contact-card {
+      padding: 24px;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      text-decoration: none;
+      transition: all 0.2s;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .contact-card:hover {
+      border-color: var(--accent);
+      background: var(--bg-card-hover);
+    }
+
+    .contact-label {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: var(--text-muted);
+      letter-spacing: 1px;
+      text-transform: uppercase;
+    }
+
+    .contact-value {
+      font-size: 15px;
+      color: var(--text);
+      font-weight: 500;
+    }
+
+    /* ===== FOOTER ===== */
+    footer {
+      padding: 40px 0;
+      border-top: 1px solid var(--border);
+      text-align: center;
+    }
+
+    footer p {
+      font-size: 13px;
+      color: var(--text-muted);
+    }
+
+    /* ===== RESPONSIVE ===== */
+    @media (max-width: 768px) {
+      section {
+        padding: 60px 0;
+      }
+
+      .hero {
+        padding-top: 120px;
+      }
+
+      .systems-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .skills-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .contact-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .nav-links {
+        gap: 20px;
+      }
+
+      .nav-links a {
+        font-size: 12px;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .nav-links {
+        display: none;
+      }
+
+      .hero h1 {
+        letter-spacing: -1px;
+      }
+    }
+
+    /* ===== ANIMATIONS ===== */
+    .fade-in {
+      opacity: 0;
+      transform: translateY(20px);
+      transition: opacity 0.6s ease, transform 0.6s ease;
+    }
+
+    .fade-in.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  </style>
+</head>
+
+<body>
+
+  <!-- NAV -->
+  <nav>
+    <div class="container">
+      <div class="nav-logo">Vatsal Mandali</div>
+      <ul class="nav-links">
+        <li><a href="#project">Project</a></li>
+        <li><a href="#experience">Experience</a></li>
+        <li><a href="#skills">Skills</a></li>
+        <li><a href="#contact">Contact</a></li>
+      </ul>
+    </div>
+  </nav>
+
+  <!-- HERO -->
+  <section class="hero">
+    <div class="container">
+      <div class="hero-label">Unreal Engine Developer</div>
+      <h1>
+        Vatsal Mandali<br>
+        <span class="highlight">Blueprint Programmer</span>
+      </h1>
+      <p class="hero-desc">
+        Specializing in Blueprint gameplay programming, including inventory systems,
+        interaction frameworks, save/load architecture, and modular game design.
+        Strong technical understanding of Unreal's rendering and performance pipelines.
+      </p>
+      <div class="status">
+        <span class="status-dot"></span>
+        Open to opportunities
+      </div>
+      <div class="hero-actions">
+        <div class="hero-actions-row">
+          <a href="#project" class="btn btn-primary">
+            <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <path d="M5 3l14 9-14 9V3z" />
+            </svg>
+            View Project
+          </a>
+          <a href="https://github.com/vatsalmandali" target="_blank" rel="noopener noreferrer" class="btn btn-secondary">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+              <path
+                d="M12 .5C5.65.5.5 5.65.5 12c0 5.08 3.29 9.39 7.86 10.91.58.1.79-.25.79-.56v-2.02c-3.2.7-3.88-1.54-3.88-1.54-.53-1.34-1.3-1.7-1.3-1.7-1.06-.73.08-.72.08-.72 1.17.08 1.78 1.2 1.78 1.2 1.04 1.78 2.72 1.27 3.39.97.1-.76.4-1.27.73-1.56-2.55-.29-5.23-1.28-5.23-5.7 0-1.26.45-2.28 1.2-3.08-.12-.3-.52-1.52.12-3.17 0 0 .97-.31 3.18 1.18a11.06 11.06 0 012.9-.39c.98 0 1.97.13 2.9.39 2.2-1.5 3.17-1.18 3.17-1.18.64 1.65.24 2.87.12 3.17.75.8 1.2 1.82 1.2 3.08 0 4.43-2.69 5.4-5.25 5.69.41.36.77 1.08.77 2.18v3.23c0 .31.21.67.8.56A11.51 11.51 0 0023.5 12C23.5 5.65 18.35.5 12 .5z" />
+            </svg>
+            GitHub ↗
+          </a>
+          <a href="https://vatsalmandali.itch.io/" target="_blank" rel="noopener noreferrer" class="btn btn-secondary">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+              <path
+                d="M2 6.5c0-1.38 1.12-2.5 2.5-2.5h15C20.88 4 22 5.12 22 6.5v11c0 1.38-1.12 2.5-2.5 2.5h-15C3.12 20 2 18.88 2 17.5v-11zm4 2.5c-.83 0-1.5.67-1.5 1.5v3c0 .83.67 1.5 1.5 1.5S7.5 14.33 7.5 13.5v-3C7.5 9.67 6.83 9 6 9zm6 0c-.83 0-1.5.67-1.5 1.5v3c0 .83.67 1.5 1.5 1.5s1.5-.67 1.5-1.5v-3c0-.83-.67-1.5-1.5-1.5zm6 0c-.83 0-1.5.67-1.5 1.5v3c0 .83.67 1.5 1.5 1.5S19.5 14.33 19.5 13.5v-3c0-.83-.67-1.5-1.5-1.5z" />
+            </svg>
+            Itch.io ↗
+          </a>
+        </div>
+        <div class="hero-secondary">
+          <a href="Vatsal Mandali Resume.pdf" download>Download Resume</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- PROJECT -->
+  <section id="project">
+    <div class="container">
+      <div class="section-label fade-in">Featured Project</div>
+      <h2 class="section-title fade-in">Third-Person Survival Prototype</h2>
+
+      <div class="project-card fade-in">
+        <div class="project-video">
+          <script>
+            (function () {
+              var root = document.currentScript.parentElement;
+              document.currentScript.remove();
+              var vid = 'iTsHXsh12xc';
+              var title = 'Third-Person Survival Prototype — gameplay demo';
+              if (location.protocol !== 'http:' && location.protocol !== 'https:') {
+                root.innerHTML =
+                  '<a class="yt-file-fallback" href="https://www.youtube.com/watch?v=' + vid + '&amp;autoplay=1" target="_blank" rel="noopener noreferrer" aria-label="Play demo on YouTube">' +
+                  '<img class="yt-file-fallback-poster" src="https://i.ytimg.com/vi/' + vid + '/hqdefault.jpg" alt="" width="480" height="360">' +
+                  '<span class="yt-file-fallback-shade" aria-hidden="true"></span>' +
+                  '<span class="yt-file-fallback-play" aria-hidden="true"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg></span>' +
+                  '<span class="yt-file-fallback-cap">Not on a web server — click to play on YouTube (embed needs http://localhost or a live site)</span>' +
+                  '</a>';
+                return;
+              }
+              root.innerHTML =
+                '<iframe src="https://www.youtube.com/embed/' + vid + '" title="' + title.replace(/"/g, '&quot;') +
+                '" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"' +
+                ' allowfullscreen loading="lazy"></iframe>';
+            })();
+          </script>
+        </div>
+
+        <div class="project-body">
+          <div class="project-header">
+            <span class="project-name">Survival Systems Prototype</span>
+            <div class="project-tags">
+              <span class="tag">UE5</span>
+              <span class="tag">Blueprint</span>
+              <span class="tag">Gameplay Systems</span>
+              <span class="tag">Component-Based</span>
+            </div>
+          </div>
+
+          <p class="project-desc">
+            A single-player gameplay systems prototype focused on modular architecture
+            and scalable design. Built entirely in Blueprint with emphasis on a
+            robust component-based system, interface-driven interaction, clean
+            separation of concerns, and reusable system components.
+          </p>
+
+          <div class="systems-grid">
+            <div class="system-item">
+              <div class="system-name">Interaction Framework</div>
+              <div class="system-desc">
+                Interface and component-driven system supporting multiple actor types (pickups, tools,
+                environment objects) determined by proximity and gameplay tags.
+              </div>
+            </div>
+            <div class="system-item">
+              <div class="system-name">Inventory System</div>
+              <div class="system-desc">
+                Slot-based inventory with drag-and-drop rearrangement, contextual item
+                usage (consume, equip, fuel), and world-drop functionality.
+              </div>
+            </div>
+            <div class="system-item">
+              <div class="system-name">Save/Load System</div>
+              <div class="system-desc">
+                Full game state persistence across sessions with reliable
+                serialization and deserialization of player and world data.
+              </div>
+            </div>
+            <div class="system-item">
+              <div class="system-name">Player Systems</div>
+              <div class="system-desc">
+                Health and stamina with real-time UI feedback, contextual regeneration,
+                and environmental damage handling.
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- EXPERIENCE -->
+  <section id="experience">
+    <div class="container">
+      <div class="section-label fade-in">Experience</div>
+      <h2 class="section-title fade-in">Professional Background</h2>
+
+      <div class="exp-card fade-in">
+        <div class="exp-top">
+          <span class="exp-title">Unreal Engine Artist / Developer</span>
+          <span class="exp-date">Oct 2022 — Present</span>
+        </div>
+        <div class="exp-company">Wildchild Studios, Ahmedabad</div>
+        <ul class="exp-list">
+          <li>Developed optimized real-time Metahuman scenes, managing character setup, materials, and performance
+            profiling in Unreal Engine 5</li>
+          <li>Handled scene-level optimization including draw call reduction, texture streaming, and lighting
+            performance tuning</li>
+          <li>Built environment scenes with focus on asset optimization, LOD management, and rendering performance</li>
+          <li>Collaborated with programmers to integrate art assets into gameplay and cinematic systems, bridging the
+            art-to-engine pipeline</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- SKILLS -->
+  <section id="skills">
+    <div class="container">
+      <div class="section-label fade-in">Skills</div>
+      <h2 class="section-title fade-in">Technical Toolkit</h2>
+
+      <div class="skills-grid fade-in">
+        <div class="skill-group">
+          <div class="skill-group-title">Gameplay Programming</div>
+          <div class="skill-items">
+            <span>Blueprint Scripting</span>
+            <span>Game Framework Architecture</span>
+            <span>System Design</span>
+            <span>UI/UX Implementation</span>
+          </div>
+        </div>
+        <div class="skill-group">
+          <div class="skill-group-title">Engine & Performance</div>
+          <div class="skill-items">
+            <span>Scene Optimization</span>
+            <span>Material Pipelines</span>
+            <span>Lighting & Rendering</span>
+            <span>Performance Profiling</span>
+          </div>
+        </div>
+        <div class="skill-group">
+          <div class="skill-group-title">Tools</div>
+          <div class="skill-items">
+            <span>Unreal Engine 5</span>
+            <span>Git / GitHub</span>
+            <span>Maya</span>
+            <span>Substance Painter</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CONTACT -->
+  <section id="contact">
+    <div class="container">
+      <div class="section-label fade-in">Contact</div>
+      <h2 class="section-title fade-in">Get In Touch</h2>
+
+      <div class="contact-grid fade-in">
+        <a href="https://mail.google.com/mail/?view=cm&fs=1&to=vatsalmandali17@gmail.com" target="_blank" rel="noopener"
+          class="contact-card">
+          <span class="contact-label">Email</span>
+          <span class="contact-value">vatsalmandali17@gmail.com</span>
+        </a>
+        <a href="https://linkedin.com/in/vatsalmandali/" target="_blank" class="contact-card">
+          <span class="contact-label">LinkedIn</span>
+          <span class="contact-value">linkedin.com/in/vatsalmandali</span>
+        </a>
+        <a href="tel:+918849655584" class="contact-card">
+          <span class="contact-label">Phone</span>
+          <span class="contact-value">+91 8849655584</span>
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <footer>
+    <div class="container">
+      <p>Vatsal Mandali — Unreal Engine Developer</p>
+    </div>
+  </footer>
+
+  <!-- SCROLL ANIMATIONS -->
+  <script>
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('visible');
+        }
+      });
+    }, { threshold: 0.1 });
+
+    document.querySelectorAll('.fade-in').forEach(el => observer.observe(el));
+  </script>
+
+</body>
+
+</html>
